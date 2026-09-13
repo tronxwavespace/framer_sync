@@ -1,0 +1,27 @@
+{
+    "name": "framer-cms-sync",
+    "version": "1.0.0",
+    "description": "One-way sync: a mathematical problem bank on GitHub to a Framer CMS collection.",
+    "type": "module",
+    "private": true,
+    "engines": {
+        "node": ">=22"
+    },
+    "scripts": {
+        "check": "node scripts/check-setup.js",
+        "test": "node test/run-local.js",
+        "extract:starter": "node scripts/extract-problems.js --starter",
+        "extract": "node scripts/extract-problems.js",
+        "setup": "node scripts/setup-collection.js",
+        "dry-run": "node src/sync.js --dry-run",
+        "sync": "node src/sync.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/tronxwavespace/framer_sync.git"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "framer-api": "^5.0.0"
+    }
+}

@@ -1,0 +1,68 @@
+name: Framer CMS Sync
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "What to run"
+        required: true
+        default: test
+        type: choice
+        options:
+          - test
+          - check
+          - setup
+          - dry-run
+          - sync
+
+jobs:
+  test:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm test
+
+  run:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      FRAMER_API_KEY: ${{ secrets.FRAMER_API_KEY }}
+      FRAMER_PROJECT_URL: ${{ secrets.FRAMER_PROJECT_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+
+      - name: Test
+        if: inputs.mode == 'test'
+        run: npm test
+
+      - name: Check setup
+        if: inputs.mode == 'check'
+        run: npm run check
+
+      - name: Create Framer collection + fields
+        if: inputs.mode == 'setup'
+        run: npm run setup
+
+      - name: Extract starter data
+        if: inputs.mode == 'dry-run' || inputs.mode == 'sync'
+        run: npm run extract:starter
+
+      - name: Dry run
+        if: inputs.mode == 'dry-run'
+        run: npm run dry-run
+
+      - name: Sync
+        if: inputs.mode == 'sync'
+        run: npm run sync
