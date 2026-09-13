@@ -1,5 +1,7 @@
 name: Framer CMS Sync
 
+# Manual dispatch: pick a mode (test/check/setup/dry-run/sync) and run it
+# against the FRAMER_API_KEY / FRAMER_PROJECT_URL repo secrets.
 on:
   push:
     branches: [main]
