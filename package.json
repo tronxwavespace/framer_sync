@@ -12,6 +12,7 @@
         "test": "node test/run-local.js",
         "extract:starter": "node scripts/extract-problems.js --starter",
         "extract": "node scripts/extract-problems.js",
+        "extract:full": "node scripts/extract-problems.js --min-rows 900",
         "setup": "node scripts/setup-collection.js",
         "audit": "node scripts/audit-collection.js",
         "audit:apply": "node scripts/audit-collection.js --apply",

@@ -19,6 +19,8 @@ on:
           - setup
           - dry-run
           - sync
+          - dry-run-full
+          - sync-full
           - audit
           - audit-apply
 
@@ -69,6 +71,18 @@ jobs:
 
       - name: Sync
         if: inputs.mode == 'sync'
+        run: npm run sync
+
+      - name: Extract all problems
+        if: inputs.mode == 'dry-run-full' || inputs.mode == 'sync-full'
+        run: npm run extract:full
+
+      - name: Dry run (full)
+        if: inputs.mode == 'dry-run-full'
+        run: npm run dry-run
+
+      - name: Sync (full)
+        if: inputs.mode == 'sync-full'
         run: npm run sync
 
       - name: Audit collection (report only)

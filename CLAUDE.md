@@ -18,9 +18,13 @@ npm run extract          # all 1,022
 npm run setup            # create the Framer collection + all 21 fields
 npm run dry-run          # print the plan, write nothing
 npm run sync             # write to Framer and publish a preview
+npm run extract:full     # regenerate data files for all 1,022 problems (raises the row-count guard to 900)
 npm run audit            # report CMS items whose Problem ID isn't a real source problem
 npm run audit:apply      # archive those items (never deletes)
 ```
+
+Scoped to 8 starter problems no longer applies once `npm run extract:full` has been run --
+the data files then cover all 1,022 problems and `npm run sync` targets that full set.
 
 Scope flags: `npm run extract -- --limit 100`, `--status Solved`, `--eligible Yes`,
 `--only JSP-000001,JSP-000005`. Local catalogs: `--local ./path`.
