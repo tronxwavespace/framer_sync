@@ -18,7 +18,7 @@ import {
     applyPlan,
     SchemaDriftError,
 } from "../src/framer.js"
-import { FIELD_DEFINITIONS, STATUS_CASES } from "../src/config.js"
+import { FIELD_DEFINITIONS, STATUS_CASES, COLLECTION_NAME } from "../src/config.js"
 import { formatPlanText, planToMarkdown } from "../src/report.js"
 import { loadEnv, checkNodeVersion } from "../src/env.js"
 import { splitIntoBlocks, parseBlock, determineScope } from "../scripts/extract-problems.js"
@@ -386,7 +386,7 @@ function starterRows() {
 
 async function setUpFakeCollection() {
     const { framer, connectImpl } = createFakeConnect()
-    const collection = await ensureCollection(framer, "Math Problem Bank")
+    const collection = await ensureCollection(framer, COLLECTION_NAME)
     await ensureFields(collection.collection, FIELD_DEFINITIONS)
     return { framer, connectImpl }
 }

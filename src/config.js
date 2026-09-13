@@ -37,7 +37,7 @@ export const LEAN_PROOF_CASES = ["Yes", "No", "Partial", "Conditional", "Pending
 export const ELIGIBLE_CASES = ["Yes", "No", "Pending verification"]
 export const SYNC_STATUS_CASES = ["Active", "Archived"]
 
-export const COLLECTION_NAME = "Math Problem Bank"
+export const COLLECTION_NAME = "Problems"
 
 // The 21 fields written into the Framer collection. `key` is the internal
 // row property name; `name` is what setup-collection.js creates in Framer.
