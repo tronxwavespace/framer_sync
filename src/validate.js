@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto"
-import { STATUS_CASES, LEAN_PROOF_CASES, ELIGIBLE_CASES, SOURCE } from "./config.js"
+import { STATUS_CASES, LEAN_PROOF_CASES, ELIGIBLE_CASES, SOURCE, TOTAL_PROBLEMS } from "./config.js"
 
 export class ValidationError extends Error {
     constructor(issues) {
@@ -10,6 +10,19 @@ export class ValidationError extends Error {
 }
 
 const ID_PATTERN = /^JSP-(\d{6})$/
+
+/**
+ * True if `id` matches JSP-###### and falls within the catalog's known
+ * range (1..totalProblems). Used to recognize CMS items that don't
+ * correspond to any real source problem -- e.g. a manually created test
+ * item -- so they can be archived instead of left as orphans.
+ */
+export function isValidProblemId(id, totalProblems = TOTAL_PROBLEMS) {
+    const match = ID_PATTERN.exec(id)
+    if (!match) return false
+    const n = Number(match[1])
+    return n >= 1 && n <= totalProblems
+}
 
 const REQUIRED_FIELDS = [
     "id",

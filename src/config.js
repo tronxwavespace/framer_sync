@@ -39,6 +39,11 @@ export const SYNC_STATUS_CASES = ["Active", "Archived"]
 
 export const COLLECTION_NAME = "Problems"
 
+// The catalog numbers consecutively from JSP-000001 to JSP-001022 with no
+// gaps (see problems/README.md upstream) -- used to recognize a CMS item
+// whose Problem ID doesn't correspond to any real source problem.
+export const TOTAL_PROBLEMS = 1022
+
 // The 21 fields written into the Framer collection. `key` is the internal
 // row property name; `name` is what setup-collection.js creates in Framer.
 export const FIELD_DEFINITIONS = [

@@ -18,6 +18,8 @@ npm run extract          # all 1,022
 npm run setup            # create the Framer collection + all 21 fields
 npm run dry-run          # print the plan, write nothing
 npm run sync             # write to Framer and publish a preview
+npm run audit            # report CMS items whose Problem ID isn't a real source problem
+npm run audit:apply      # archive those items (never deletes)
 ```
 
 Scope flags: `npm run extract -- --limit 100`, `--status Solved`, `--eligible Yes`,
@@ -43,7 +45,9 @@ scripts/extract-problems.js  markdown catalogs → CSV + JSON
 scripts/setup-collection.js  create collection and fields
 scripts/check-setup.js       preflight diagnostics
 test/fake-framer.js          in-memory stand-in for the API client
-test/run-local.js            end-to-end assertions (94 assertions, 41 tests)
+test/run-local.js            end-to-end assertions (100 assertions, 42 tests)
+scripts/audit-collection.js  archives CMS items whose Problem ID isn't a real
+                              source problem (never deletes; --apply to write)
 .github/workflows/sync.yml   CI: npm test on every push/PR; workflow_dispatch to
                               run check/setup/dry-run/sync for real against Framer
                               using the FRAMER_API_KEY / FRAMER_PROJECT_URL repo secrets

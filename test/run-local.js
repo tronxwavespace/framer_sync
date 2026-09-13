@@ -5,7 +5,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 
 import { parseCsv, toCsv } from "../src/source.js"
-import { validateRows, ValidationError, computeContentHash } from "../src/validate.js"
+import { validateRows, ValidationError, computeContentHash, isValidProblemId } from "../src/validate.js"
 import { buildPlan, isNoop, planSummary } from "../src/plan.js"
 import {
     createClient,
@@ -237,6 +237,15 @@ test("validate: content hash changes when content changes, stable otherwise", ()
     const [c] = validateRows([rawRow({ title: "Riemann hypothesis (revised)" })])
     check(a.contentHash === b.contentHash, "identical rows hash identically")
     check(a.contentHash !== c.contentHash, "changed content changes the hash")
+})
+
+test("validate: isValidProblemId recognizes ids within the catalog's known range", () => {
+    check(isValidProblemId("JSP-000001", 1022) === true, "first id is valid")
+    check(isValidProblemId("JSP-001022", 1022) === true, "last id is valid")
+    check(isValidProblemId("JSP-001023", 1022) === false, "one past the end is invalid")
+    check(isValidProblemId("JSP-000000", 1022) === false, "zero is invalid")
+    check(isValidProblemId("not-an-id", 1022) === false, "malformed id is invalid")
+    check(isValidProblemId("", 1022) === false, "empty string is invalid")
 })
 
 // ---------------------------------------------------------------------------

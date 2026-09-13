@@ -19,6 +19,8 @@ on:
           - setup
           - dry-run
           - sync
+          - audit
+          - audit-apply
 
 jobs:
   test:
@@ -68,3 +70,11 @@ jobs:
       - name: Sync
         if: inputs.mode == 'sync'
         run: npm run sync
+
+      - name: Audit collection (report only)
+        if: inputs.mode == 'audit'
+        run: npm run audit
+
+      - name: Audit collection (archive orphans)
+        if: inputs.mode == 'audit-apply'
+        run: npm run audit:apply
