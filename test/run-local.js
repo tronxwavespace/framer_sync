@@ -19,6 +19,7 @@ import {
     SchemaDriftError,
 } from "../src/framer.js"
 import { FIELD_DEFINITIONS, STATUS_CASES, COLLECTION_NAME } from "../src/config.js"
+import { isSyncDue, isValidInterval } from "../src/schedule.js"
 import { formatPlanText, planToMarkdown } from "../src/report.js"
 import { loadEnv, checkNodeVersion } from "../src/env.js"
 import { splitIntoBlocks, parseBlock, determineScope } from "../scripts/extract-problems.js"
@@ -598,6 +599,36 @@ test("report: plan formatting includes the counts", () => {
 
 test("config: exactly 21 fields are defined", () => {
     check(FIELD_DEFINITIONS.length === 21, `expected 21 fields, found ${FIELD_DEFINITIONS.length}`)
+})
+
+// ---------------------------------------------------------------------------
+// schedule.js -- pure "is a sync due yet" logic
+// ---------------------------------------------------------------------------
+
+test("schedule: a sync that has never run before is always due", () => {
+    const { due } = isSyncDue({ lastRunAt: null, interval: "day", now: new Date("2026-01-10T00:00:00Z") })
+    check(due === true, "never-run is due")
+})
+
+test("schedule: not due until the configured interval has elapsed", () => {
+    const now = new Date("2026-01-10T00:00:00Z")
+    const ranOneHourAgo = new Date("2026-01-09T23:00:00Z")
+    check(isSyncDue({ lastRunAt: ranOneHourAgo, interval: "day", now }).due === false, "an hour into a day interval is not due")
+    check(isSyncDue({ lastRunAt: ranOneHourAgo, interval: "hour", now }).due === true, "an hour into an hour interval is due")
+})
+
+test("schedule: due exactly at and after the interval boundary", () => {
+    const now = new Date("2026-01-10T00:00:00Z")
+    const exactlyOneWeekAgo = new Date("2026-01-03T00:00:00Z")
+    check(isSyncDue({ lastRunAt: exactlyOneWeekAgo, interval: "week", now }).due === true, "due right at the boundary")
+    const eightDaysAgo = new Date("2026-01-02T00:00:00Z")
+    check(isSyncDue({ lastRunAt: eightDaysAgo, interval: "week", now }).due === true, "still due well past the boundary")
+})
+
+test("schedule: rejects an unknown interval", () => {
+    assert.throws(() => isSyncDue({ lastRunAt: null, interval: "fortnight", now: new Date() }))
+    check(isValidInterval("month") === true, "month is a valid interval")
+    check(isValidInterval("fortnight") === false, "fortnight is not a valid interval")
 })
 
 // ---------------------------------------------------------------------------

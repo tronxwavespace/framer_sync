@@ -6,28 +6,49 @@ Source of truth is the `TheJustinSunPrize/awards` repo, where 1,022 problems liv
 markdown tables across 11 files under `problems/catalog-*.md`. This tool flattens them
 to CSV/JSON and writes them into Framer via the **Framer Server API** (`framer-api`).
 
-Currently scoped to **8 starter problems** while the Framer pages are being built.
+Started out scoped to 8 starter problems while the Framer pages were being built; the
+full 1,022-problem catalog has since been synced and now stays in sync **automatically**
+on a schedule (see "Automatic scheduling" below).
 
 ## Commands
 
 ```bash
 npm run check            # diagnose the setup — run this first when something breaks
 npm test                 # full pipeline against an in-memory fake Framer, no API key needed
-npm run extract:starter  # regenerate the 8-problem data files
+npm run extract:starter  # regenerate the 8-problem data files (small-scope testing only)
 npm run extract          # all 1,022
+npm run extract:full     # same, but raises the row-count guard to 900 (for a real full sync)
 npm run setup            # create the Framer collection + all 21 fields
 npm run dry-run          # print the plan, write nothing
 npm run sync             # write to Framer and publish a preview
-npm run extract:full     # regenerate data files for all 1,022 problems (raises the row-count guard to 900)
 npm run audit            # report CMS items whose Problem ID isn't a real source problem
 npm run audit:apply      # archive those items (never deletes)
+npm run schedule:gate    # decide whether a scheduled sync is due yet (used by CI, not by hand)
 ```
-
-Scoped to 8 starter problems no longer applies once `npm run extract:full` has been run --
-the data files then cover all 1,022 problems and `npm run sync` targets that full set.
 
 Scope flags: `npm run extract -- --limit 100`, `--status Solved`, `--eligible Yes`,
 `--only JSP-000001,JSP-000005`. Local catalogs: `--local ./path`.
+
+## Automatic scheduling
+
+`.github/workflows/sync.yml` ticks **every hour** (`schedule: cron: "0 * * * *"` --
+the finest interval on offer) and runs `scripts/schedule-gate.js` first. That script
+reads `sync-schedule.json`, looks up the most recent successful scheduled run via the
+GitHub API, and only actually runs `extract:full` + `sync` if the configured interval
+has elapsed since then; otherwise it skips that tick.
+
+To change how often the full catalog re-syncs, **edit `sync-schedule.json`** --
+no workflow or cron changes needed:
+
+```json
+{ "interval": "hour" }
+```
+
+Valid values: `hour`, `day`, `week`, `month`, `year` (see `src/schedule.js`).
+
+To test the gating logic on demand without waiting for the next tick, run the
+`Framer CMS Sync` workflow manually with mode `scheduled-check` -- it exercises the
+exact same job the real hourly cron fires.
 
 ## Requirements
 
@@ -45,16 +66,22 @@ src/validate.js  row validation, coercion, slugs, content hashing
 src/plan.js      the diff — pure, no I/O, which is what makes dry runs trustworthy
 src/framer.js    THE ONLY FILE THAT IMPORTS framer-api
 src/report.js    run summary + GitHub Actions job summary
+src/schedule.js  pure "is a sync due yet" logic given an interval + last run time
 scripts/extract-problems.js  markdown catalogs → CSV + JSON
 scripts/setup-collection.js  create collection and fields
 scripts/check-setup.js       preflight diagnostics
-test/fake-framer.js          in-memory stand-in for the API client
-test/run-local.js            end-to-end assertions (100 assertions, 42 tests)
 scripts/audit-collection.js  archives CMS items whose Problem ID isn't a real
                               source problem (never deletes; --apply to write)
-.github/workflows/sync.yml   CI: npm test on every push/PR; workflow_dispatch to
-                              run check/setup/dry-run/sync for real against Framer
-                              using the FRAMER_API_KEY / FRAMER_PROJECT_URL repo secrets
+scripts/schedule-gate.js     checks sync-schedule.json + GitHub run history to
+                              decide if the hourly cron tick should actually sync
+sync-schedule.json           editable sync cadence: hour | day | week | month | year
+test/fake-framer.js          in-memory stand-in for the API client
+test/run-local.js            end-to-end assertions (107 assertions, 46 tests)
+.github/workflows/sync.yml   CI: npm test on every push/PR; an hourly schedule
+                              trigger for the fully-automatic sync; workflow_dispatch
+                              to run check/setup/dry-run/sync/audit/scheduled-check
+                              by hand, all against the FRAMER_API_KEY /
+                              FRAMER_PROJECT_URL repo secrets
 ```
 
 ## Conventions that matter

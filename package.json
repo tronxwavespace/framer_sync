@@ -16,6 +16,7 @@
         "setup": "node scripts/setup-collection.js",
         "audit": "node scripts/audit-collection.js",
         "audit:apply": "node scripts/audit-collection.js --apply",
+        "schedule:gate": "node scripts/schedule-gate.js",
         "dry-run": "node src/sync.js --dry-run",
         "sync": "node src/sync.js"
     },

@@ -1,11 +1,19 @@
 name: Framer CMS Sync
 
-# Manual dispatch: pick a mode (test/check/setup/dry-run/sync) and run it
-# against the FRAMER_API_KEY / FRAMER_PROJECT_URL repo secrets.
+# Manual dispatch: pick a mode (test/check/setup/dry-run/sync/...) and run
+# it against the FRAMER_API_KEY / FRAMER_PROJECT_URL repo secrets.
+#
+# Fully automatic sync: this also ticks hourly (the finest interval on
+# offer) and checks sync-schedule.json to decide whether a sync is
+# actually due yet. To change how often the full catalog re-syncs, edit
+# that one file's "interval" ("hour" | "day" | "week" | "month" | "year")
+# -- no workflow/cron changes needed.
 on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: "0 * * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -23,10 +31,11 @@ on:
           - sync-full
           - audit
           - audit-apply
+          - scheduled-check
 
 jobs:
   test:
-    if: github.event_name != 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +46,7 @@ jobs:
       - run: npm test
 
   run:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.mode != 'scheduled-check'
     runs-on: ubuntu-latest
     env:
       FRAMER_API_KEY: ${{ secrets.FRAMER_API_KEY }}
@@ -92,3 +101,29 @@ jobs:
       - name: Audit collection (archive orphans)
         if: inputs.mode == 'audit-apply'
         run: npm run audit:apply
+
+  scheduled-sync:
+    if: github.event_name == 'schedule' || inputs.mode == 'scheduled-check'
+    runs-on: ubuntu-latest
+    env:
+      FRAMER_API_KEY: ${{ secrets.FRAMER_API_KEY }}
+      FRAMER_PROJECT_URL: ${{ secrets.FRAMER_PROJECT_URL }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+
+      - name: Check whether a sync is due (see sync-schedule.json)
+        id: gate
+        run: npm run schedule:gate
+
+      - name: Extract all problems
+        if: steps.gate.outputs.should_run == 'true'
+        run: npm run extract:full
+
+      - name: Sync
+        if: steps.gate.outputs.should_run == 'true'
+        run: npm run sync
