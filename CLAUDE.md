@@ -10,6 +10,13 @@ Started out scoped to 8 starter problems while the Framer pages were being built
 full 1,022-problem catalog has since been synced and now stays in sync **automatically**
 on a schedule (see "Automatic scheduling" below).
 
+**Guides:**
+- `docs/GETTING_STARTED.md` -- non-technical step-by-step: checking it's working,
+  changing the sync cadence, running a mode by hand, fixing common problems.
+- `docs/AGENT_NOTES.md` -- for whoever (human or AI agent) picks this project up next:
+  the harness this was built in, real incidents and their actual fixes, do's and don'ts.
+- `docs/IDEAS.md` -- what to build in Framer with this data, roughly ordered by effort.
+
 ## Commands
 
 ```bash
